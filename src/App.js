@@ -1,6 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -9,6 +9,7 @@ function App() {
   const [phone, setPhone]=useState("");
   const [dateB, setDateB]=useState("");
   const [vError, setvError]=useState("");
+  const modalRef=useRef();
 
   const openModal=()=>{
     setIsModalOpen(true);
@@ -17,20 +18,22 @@ function App() {
     setIsModalOpen(false);
     setvError("");
   }
-  const handleSubmit=()=>{
+  const handleSubmit=(e)=>{
+    e.preventDefault();
+
     if(!username || !email || !phone || !dateB){
       setvError("Please fill in all fields.");
       return;
     }
   // }
   if(!/^\d{10}$/.test(phone)){
-    setvError("Invalid phone number. Please enter a 10-digit phone number.")
+    window.alert("Invalid phone number. Please enter a 10-digit phone number.")
     return;
   }
   const currentDate=new Date();
   const selectedDate=new Date(dateB);
   if (selectedDate>currentDate){
-    setvError("Invalid date of birth. Please enter a valid date.")
+    window.alert("Invalid date of birth. Date of birth cannot be in the future.")
     return;
   }
   closeModal();
@@ -39,65 +42,68 @@ function App() {
   setPhone("");
   setDateB("");
 };
+// <***** data*******>
+const callUName = (e) => {
+  setUsername(e.target.value);
+}
+const callEmail = (e) =>{
+  setEmail(e.target.value);
+} 
+const callPhone= (e) => {
+  setPhone(e.target.value);
+}
+const callDob = (e) =>{
+  setDateB(e.target.value);
 
-
-  return (
-    <div className="App">
-      <div><h1>User Details Modal</h1></div>
-      <button onClick={openModal}>Open Form</button>
-
-      {isModalOpen && (
-        <div className="modal" onClick={closeModal}>
-          
-          <div className="div1" onClick={(e) => e.stopPropagation()}>
-            
-            <form>
-              <label htmlFor="username">Username:</label>
-              <input
-                type="text"
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)} required
-              /><br/>
-
-              <label htmlFor="email">Email:</label>
-              <input
-                type="text"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)} required
-              /><br/>
-
-              <label htmlFor="phone">Phone Number:</label>
-              <input
-                type="text"
-                id="phone"
-                value={phone} required
-                onChange={(e) => setPhone(e.target.value)}
-              /><br/>
-
-              <label htmlFor="dob">Date of Birth:</label>
-              <input
-                type="date"
-                id="dob"
-                value={dateB}
-                onChange={(e) => setDateB(e.target.value)} required
-              /><br/>
-
-              <button
-                type="button"
-                className="submit-button"
-                onClick={handleSubmit}
-              >
-                Submit
-              </button>
-            </form>
-            {vError && <p>{vError}</p>}
-          </div>
-        </div>
-      )}
-    </div>
-  );
 }
 
-export default App;
+
+
+const handleOutsideClick = (e) => {
+  if (modalRef.current && !modalRef.current.contains(e.target)) {
+    closeModal();
+  }
+};
+
+return (
+  <div className="App">
+    <div>
+      <h1>User Details Modal</h1>
+      <button onClick={openModal}>Open Form</button>
+    </div>
+    {isModalOpen && (
+      <div className="modal" ref={modalRef}>
+        <div className="modal-content">
+          <form onSubmit={handleSubmit}>
+            <h2>Fill Details</h2>
+            <label htmlFor="username">Username:</label>
+            <br />
+            <input type="text" id="username" value={username} onChange={callUName} required />
+            <br />
+            <label htmlFor="email">Email Address:</label>
+            <br />
+            <input type="email" id="email" value={email} onChange={callEmail} required />
+            <br />
+            <label htmlFor="phone">Phone Number:</label>
+            <br />
+            <input type="number" id="phone" value={phone} onChange={callPhone} required />
+            <br />
+            <label htmlFor="dob">Date of Birth:</label>
+            <br />
+            <input type="date" id="dob" value={dateB} onChange={callDob} required />
+            <br />
+            <button type="submit" className="submit-button">
+              Submit
+            </button>
+          </form>
+        </div>
+      </div>
+    )}
+    {isModalOpen && (
+      // Add an overlay to capture clicks outside the modal
+      <div className="modal-overlay" onClick={handleOutsideClick}></div>
+    )}
+  </div>
+);
+    }
+    export default App;
